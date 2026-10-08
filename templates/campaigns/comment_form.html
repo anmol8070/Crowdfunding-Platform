@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Edit Comment - BackerWave{% endblock %}
+
+{% block content %}
+<div class="bg-surface border-bottom border-subtle pt-4 pb-5 min-vh-100">
+    <div class="container max-w-700">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-light">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-4">Edit Comment</h4>
+                <form method="post" action="{% url 'campaigns:comment_edit' comment.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <textarea name="content" class="form-control rounded-3" rows="4" required>{{ form.content.value|default_if_none:'' }}</textarea>
+                        {% if form.content.errors %}
+                            <div class="text-danger small mt-1">{{ form.content.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'campaigns:detail' campaign.slug %}" class="btn btn-outline-secondary rounded-pill px-4 fw-medium">Cancel</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-medium">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

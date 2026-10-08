@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receipt - {{ contribution.transaction_reference }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; color: #333; }
+        .header { border-bottom: 2px solid #0d6efd; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: end; }
+        .header h1 { margin: 0; color: #0d6efd; }
+        .details-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        .details-table th, .details-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .details-table th { width: 30%; color: #666; }
+        .total { font-size: 1.5em; font-weight: bold; text-align: right; margin-top: 20px; color: #198754; }
+        .footer { margin-top: 50px; text-align: center; color: #777; font-size: 0.9em; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="margin-bottom: 20px; text-align: right;">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #0d6efd; color: white; border: none; cursor: pointer;">Print Receipt</button>
+    </div>
+    
+    <div class="header">
+        <div>
+            <h1>BackerWave</h1>
+            <p style="margin:5px 0 0 0;">Official Contribution Receipt</p>
+        </div>
+        <div style="text-align: right;">
+            <strong>Date:</strong> {{ contribution.updated_at|date:"M d, Y" }}<br>
+            <strong>Time:</strong> {{ contribution.updated_at|date:"H:i T" }}
+        </div>
+    </div>
+    
+    <table class="details-table">
+        <tr>
+            <th>Transaction Reference</th>
+            <td>{{ contribution.transaction_reference }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td><strong>{{ contribution.get_status_display }}</strong></td>
+        </tr>
+        <tr>
+            <th>Contributor</th>
+            <td>{{ contribution.contributor.profile.full_name|default:contribution.contributor.username }} ({{ contribution.contributor.email }})</td>
+        </tr>
+        <tr>
+            <th>Campaign Supported</th>
+            <td>{{ contribution.campaign.title }}</td>
+        </tr>
+        <tr>
+            <th>Campaign Creator</th>
+            <td>{{ contribution.campaign.creator.username }}</td>
+        </tr>
+        {% if contribution.message %}
+        <tr>
+            <th>Message Included</th>
+            <td><em>"{{ contribution.message }}"</em></td>
+        </tr>
+        {% endif %}
+    </table>
+    
+    <div class="total">
+        Amount Paid: ${{ contribution.amount }}
+    </div>
+    
+    <div class="footer">
+        <p>Thank you for supporting innovative projects on BackerWave.</p>
+        <p>This is a computer-generated receipt for a mock transaction.</p>
+    </div>
+</body>
+</html>

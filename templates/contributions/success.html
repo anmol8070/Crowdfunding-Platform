@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Contribution Successful{% endblock %}
+{% block content %}
+<div class="container py-5 text-center max-w-700" style="max-width: 600px;">
+    <div class="py-5">
+        <div class="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4 mx-auto" style="width: 100px; height: 100px;">
+            <i class="bi bi-check2 fs-1"></i>
+        </div>
+        
+        <h1 class="fw-bold mb-3">You're awesome!</h1>
+        <p class="lead text-muted mb-5">Your pledge of <strong class="text-dark">${{ contribution.amount }}</strong> to <strong>{{ contribution.campaign.title }}</strong> was successful. Thank you for helping bring this idea to life.</p>
+        
+        <div class="card border-subtle shadow-sm rounded-4 mb-5 text-start">
+            <div class="card-body p-4">
+                <h6 class="text-muted fw-bold text-small text-uppercase border-bottom border-subtle pb-2 mb-3">Transaction Details</h6>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-secondary">Reference</span>
+                    <span class="fw-medium font-monospace">{{ contribution.transaction_reference }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-secondary">Date</span>
+                    <span class="fw-medium">{{ contribution.updated_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-secondary">Status</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Success</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+            <a href="{% url 'campaigns:detail' contribution.campaign.slug %}" class="btn btn-primary btn-lg px-4 shadow-sm fw-bold">Return to Project</a>
+            <a href="{% url 'contributions:dashboard' %}" class="btn btn-outline-secondary btn-lg px-4 fw-medium">View My Pledges</a>
+            <a href="{% url 'contributions:receipt' contribution.id %}" target="_blank" class="btn btn-light btn-lg px-4 fw-medium"><i class="bi bi-printer me-2"></i>Receipt</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

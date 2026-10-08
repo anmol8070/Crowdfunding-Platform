@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}My Favorites{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-heart-fill text-danger"></i> Favorite Campaigns</h2>
+
+<div class="row">
+    {% for fav in favorites %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                {% if fav.campaign.campaign_image %}
+                    <img src="{{ fav.campaign.campaign_image.url }}" class="card-img-top">
+                {% else %}
+                    <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center">No Image</div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ fav.campaign.title }}</h5>
+                    <p class="card-text text-muted small">{{ fav.campaign.short_description|truncatechars:80 }}</p>
+                    <div class="progress mb-2" style="height: 6px;">
+                        <div class="progress-bar bg-success" style="width: {{ fav.campaign.progress_percentage }}%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span>${{ fav.campaign.current_amount }} raised</span>
+                        <span class="badge bg-{{ fav.campaign.status|lower|default:'primary' }}">{{ fav.campaign.get_status_display }}</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0 d-flex gap-2">
+                    <a href="{% url 'campaigns:detail' fav.campaign.slug %}" class="btn btn-sm btn-outline-primary w-100">View</a>
+                    <form method="post" action="{% url 'campaigns:favorite' fav.campaign.slug %}" class="w-100">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100"><i class="bi bi-trash"></i> Remove</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12 text-center py-5">
+            <h4 class="text-muted">You haven't favorited any campaigns yet.</h4>
+            <a href="{% url 'campaigns:list' %}" class="btn btn-primary mt-3">Explore Campaigns</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

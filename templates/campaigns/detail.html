@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% block title %}{{ campaign.title }} - BackerWave{% endblock %}
+
+{% block content %}
+<div class="bg-surface border-bottom border-subtle pt-4 pb-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-5 max-w-700 mx-auto" style="max-width: 800px;">
+            <a href="{% url 'campaigns:list' %}?category={{ campaign.category.slug }}" class="badge bg-primary-subtle text-primary mb-3 px-3 py-2 rounded-pill fw-medium border border-primary-subtle text-decoration-none">{{ campaign.category.name }}</a>
+            <h1 class="display-6 fw-bold mb-3">{{ campaign.title }}</h1>
+            <p class="lead text-muted">{{ campaign.short_description }}</p>
+        </div>
+
+        <div class="row gy-5">
+            <!-- Media & Story -->
+            <div class="col-lg-7 col-xl-8">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-light">
+                    {% if campaign.campaign_image %}
+                        <img src="{{ campaign.campaign_image.url }}" class="w-100 object-fit-cover" style="max-height: 500px;" alt="{{ campaign.title }}">
+                    {% else %}
+                        <div class="w-100 d-flex align-items-center justify-content-center text-muted" style="height: 400px;">
+                            <i class="bi bi-image" style="font-size: 5rem;"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <ul class="nav nav-pills mb-4 gap-2 border-bottom border-subtle pb-3" id="campaignTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill px-4 fw-medium" id="story-tab" data-bs-toggle="pill" data-bs-target="#story" type="button" role="tab">Story</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-4 fw-medium" id="updates-tab" data-bs-toggle="pill" data-bs-target="#updates" type="button" role="tab">Updates <span class="badge bg-secondary ms-1 rounded-pill">{{ campaign.updates.count }}</span></button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-4 fw-medium" id="comments-tab" data-bs-toggle="pill" data-bs-target="#comments" type="button" role="tab">Comments <span class="badge bg-secondary ms-1 rounded-pill">{{ campaign.comments.count }}</span></button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="campaignTabsContent">
+                    <div class="tab-pane fade show active" id="story" role="tabpanel">
+                        <div class="content-body" style="font-size: 1.1rem; color: var(--text-secondary); line-height: 1.8;">
+                            {{ campaign.description|linebreaks }}
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="updates" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold mb-0">Project Updates</h4>
+                            {% if request.user == campaign.creator %}
+                                <a href="{% url 'campaigns:update_create' campaign.slug %}" class="btn btn-outline-primary btn-sm fw-bold px-3">Post Update</a>
+                            {% endif %}
+                        </div>
+                        
+                        {% for update in campaign.updates.all|dictsortreversed:"created_at" %}
+                            <div class="card border-subtle shadow-sm rounded-4 mb-4">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-megaphone"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-0">{{ update.title }}</h5>
+                                            <small class="text-muted">{{ update.created_at|date:"F j, Y" }}</small>
+                                        </div>
+                                    </div>
+                                    <p class="text-secondary mb-0">{{ update.content|linebreaks }}</p>
+                                    {% if update.image %}
+                                        <img src="{{ update.image.url }}" class="img-fluid rounded-3 mt-3 shadow-sm border border-subtle">
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="text-center py-5 bg-light rounded-4 border border-subtle">
+                                <i class="bi bi-journal-x fs-1 text-muted mb-3 d-block"></i>
+                                <h5 class="fw-bold text-muted">No updates yet</h5>
+                                <p class="text-muted small mb-0">The creator hasn't posted any updates.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="tab-pane fade" id="comments" role="tabpanel">
+                        <div class="mb-5">
+                            <h4 class="fw-bold mb-4">Comments</h4>
+                            {% if user.is_authenticated %}
+                                <div class="card border-subtle shadow-sm rounded-4 mb-5">
+                                    <div class="card-body p-4">
+                                        <form method="post" action="{% url 'campaigns:comment_add' campaign.slug %}">
+                                            {% csrf_token %}
+                                            <div class="mb-3">
+                                                <textarea name="content" class="form-control rounded-3" rows="3" placeholder="Leave a comment..." required></textarea>
+                                            </div>
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-medium">Post Comment</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-light border border-subtle text-center py-4 rounded-4 mb-5">
+                                    <p class="mb-3 text-muted">You must be logged in to post a comment.</p>
+                                    <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-outline-primary rounded-pill px-4 fw-medium">Log In to Comment</a>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="comments-list">
+                                {% for comment in comments %}
+                                    <div class="comment mb-4" id="comment-{{ comment.id }}">
+                                        <div class="d-flex gap-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 45px; height: 45px;">
+                                                    {{ comment.user.username|make_list|first|upper }}
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="bg-light border border-subtle rounded-4 p-3 {% if comment.is_pinned %}border-warning{% endif %}">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <div>
+                                                            <strong class="text-dark">{{ comment.user.username }}</strong>
+                                                            {% if comment.user == campaign.creator %}
+                                                                <span class="badge bg-primary ms-1 rounded-pill" style="font-size: 0.7em;">Creator</span>
+                                                            {% endif %}
+                                                            <small class="text-muted ms-2">{{ comment.created_at|timesince }} ago</small>
+                                                            {% if comment.is_pinned %}
+                                                                <span class="badge bg-warning text-dark ms-2 rounded-pill"><i class="bi bi-pin-angle-fill me-1"></i>Pinned</span>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-sm btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                                                                <i class="bi bi-three-dots-vertical"></i>
+                                                            </button>
+                                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-subtle rounded-3">
+                                                                {% if request.user == campaign.creator %}
+                                                                    <li>
+                                                                        <form method="post" action="{% url 'campaigns:comment_pin' comment.id %}">
+                                                                            {% csrf_token %}
+                                                                            <button type="submit" class="dropdown-item text-small"><i class="bi bi-pin-angle me-2"></i>{% if comment.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
+                                                                        </form>
+                                                                    </li>
+                                                                {% endif %}
+                                                                {% if request.user == comment.user %}
+                                                                    <li><a class="dropdown-item text-small" href="{% url 'campaigns:comment_edit' comment.id %}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                                                    <li><a class="dropdown-item text-small text-danger" href="{% url 'campaigns:comment_delete' comment.id %}"><i class="bi bi-trash me-2"></i>Delete</a></li>
+                                                                {% else %}
+                                                                    <li><a class="dropdown-item text-small" href="{% url 'campaigns:comment_report' comment.id %}"><i class="bi bi-flag me-2"></i>Report</a></li>
+                                                                {% endif %}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    <p class="mb-0 text-secondary" style="white-space: pre-line;">{{ comment.content }}</p>
+                                                </div>
+                                                
+                                                <div class="mt-2 ms-2">
+                                                    {% if user.is_authenticated %}
+                                                        <button class="btn btn-sm btn-link text-muted text-decoration-none p-0 fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#replyForm{{ comment.id }}">
+                                                            Reply
+                                                        </button>
+                                                    {% endif %}
+                                                    
+                                                    <div class="collapse mt-3" id="replyForm{{ comment.id }}">
+                                                        <form method="post" action="{% url 'campaigns:comment_reply' comment.id %}">
+                                                            {% csrf_token %}
+                                                            <div class="d-flex gap-2">
+                                                                <input type="text" name="content" class="form-control form-control-sm rounded-pill px-3" placeholder="Write a reply..." required>
+                                                                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 fw-medium">Reply</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                
+                                                {% if comment.replies.all %}
+                                                    <div class="replies mt-3 ps-3 border-start border-subtle">
+                                                        {% for reply in comment.replies.all %}
+                                                            <div class="d-flex gap-2 mb-3">
+                                                                <div class="flex-shrink-0">
+                                                                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                                                        {{ reply.user.username|make_list|first|upper }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="flex-grow-1">
+                                                                    <div class="bg-light border border-subtle rounded-4 p-2 px-3">
+                                                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                                                            <div>
+                                                                                <strong class="text-dark small">{{ reply.user.username }}</strong>
+                                                                                {% if reply.user == campaign.creator %}
+                                                                                    <span class="badge bg-primary ms-1 rounded-pill" style="font-size: 0.6em;">Creator</span>
+                                                                                {% endif %}
+                                                                                <small class="text-muted ms-2" style="font-size: 0.75rem;">{{ reply.created_at|timesince }} ago</small>
+                                                                            </div>
+                                                                            <div class="dropdown">
+                                                                                <button class="btn btn-sm btn-link text-muted p-0 py-0 lh-1" type="button" data-bs-toggle="dropdown">
+                                                                                    <i class="bi bi-three-dots-vertical" style="font-size: 0.8rem;"></i>
+                                                                                </button>
+                                                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-subtle rounded-3 py-1">
+                                                                                    {% if request.user == reply.user %}
+                                                                                        <li><a class="dropdown-item text-small py-1" style="font-size: 0.85rem;" href="{% url 'campaigns:comment_edit' reply.id %}">Edit</a></li>
+                                                                                        <li><a class="dropdown-item text-small text-danger py-1" style="font-size: 0.85rem;" href="{% url 'campaigns:comment_delete' reply.id %}">Delete</a></li>
+                                                                                    {% else %}
+                                                                                        <li><a class="dropdown-item text-small py-1" style="font-size: 0.85rem;" href="{% url 'campaigns:comment_report' reply.id %}">Report</a></li>
+                                                                                    {% endif %}
+                                                                                </ul>
+                                                                            </div>
+                                                                        </div>
+                                                                        <p class="mb-0 text-secondary" style="font-size: 0.9rem;">{{ reply.content }}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <div class="text-center py-5 bg-light rounded-4 border border-subtle">
+                                        <i class="bi bi-chat-dots fs-1 text-muted mb-3 d-block"></i>
+                                        <h5 class="fw-bold text-muted">No comments yet</h5>
+                                        <p class="text-muted small mb-0">Be the first to share your thoughts on this project.</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Funding Widget Sidebar -->
+            <div class="col-lg-5 col-xl-4">
+                <div class="position-sticky" style="top: 100px;">
+                    <div class="card border-subtle shadow-md rounded-4 mb-4">
+                        <div class="card-body p-4">
+                            <div class="progress mb-4" style="height: 10px;">
+                                <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: {{ campaign.progress_percentage }}%"></div>
+                            </div>
+                            
+                            <h2 class="display-6 fw-bold text-success mb-1">${{ campaign.current_amount }}</h2>
+                            <p class="text-muted fw-medium mb-4">raised of ${{ campaign.goal_amount }} goal</p>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-6">
+                                    <h4 class="fw-bold mb-1">{{ campaign.contributions.count }}</h4>
+                                    <span class="text-muted text-small fw-medium">Backers</span>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="fw-bold mb-1">{{ campaign.end_date|timeuntil|slice:":3"|default:"0" }}</h4>
+                                    <span class="text-muted text-small fw-medium">Days to go</span>
+                                </div>
+                            </div>
+                            
+                            {% if campaign.status == 'ACTIVE' %}
+                                <a href="{% url 'contributions:support' campaign.slug %}" class="btn btn-success btn-lg w-100 fw-bold shadow-sm mb-3 py-3">Support This Project</a>
+                            {% else %}
+                                <button class="btn btn-secondary btn-lg w-100 fw-bold shadow-sm mb-3 py-3" disabled>Project Closed</button>
+                            {% endif %}
+                            
+                            <div class="d-flex gap-2">
+                                {% if user.is_authenticated %}
+                                    <form method="post" action="{% url 'campaigns:favorite' campaign.slug %}" class="w-100">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn {% if is_favorited %}btn-danger{% else %}btn-outline-secondary{% endif %} w-100 fw-medium">
+                                            <i class="bi {% if is_favorited %}bi-heart-fill{% else %}bi-heart{% endif %} me-2"></i> 
+                                            {% if is_favorited %}Saved{% else %}Save{% endif %}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                <button class="btn btn-outline-secondary w-100 fw-medium" onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied!');"><i class="bi bi-share me-2"></i> Share</button>
+                            </div>
+                            
+                            <p class="text-center text-caption text-muted mt-3 mb-0"><i class="bi bi-shield-check text-success"></i> All mock payments are securely simulated.</p>
+                        </div>
+                    </div>
+
+                    
+                <hr class="border-subtle my-5">
+                <h4 class="fw-bold mb-4">Project Milestones</h4>
+                <div class="position-relative ps-4 border-start border-subtle border-2 ms-3">
+                    {% for milestone in campaign.milestones.all %}
+                        <div class="mb-4 position-relative">
+                            <div class="position-absolute translate-middle rounded-circle border border-2 border-white 
+                                {% if milestone.status == 'COMPLETED' %}bg-success{% else %}bg-secondary{% endif %}" 
+                                style="width: 16px; height: 16px; left: -16px; top: 8px;"></div>
+                            <h5 class="fw-bold mb-1 {% if milestone.status == 'COMPLETED' %}text-success{% endif %}">
+                                {{ milestone.title }} <span class="badge bg-light text-muted ms-2">${{ milestone.target_amount }}</span>
+                            </h5>
+                            <p class="text-muted mb-0 text-small">{{ milestone.description }}</p>
+                            {% if milestone.status == 'COMPLETED' %}
+                                <div class="text-success text-caption fw-medium mt-1"><i class="bi bi-check-circle me-1"></i> Completed on {{ milestone.completed_at|date:"M d, Y" }}</div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <p class="text-muted mb-0">No milestones have been set for this project yet.</p>
+                    {% endfor %}
+                </div>
+
+                    <!-- Creator Card -->
+                    <div class="card border-0 bg-light rounded-4">
+                        <div class="card-body p-4 text-center">
+                            {% if campaign.creator.profile.profile_image %}
+                                <img src="{{ campaign.creator.profile.profile_image.url }}" class="rounded-circle shadow-sm mb-3 object-fit-cover" width="80" height="80">
+                            {% else %}
+                                <div class="rounded-circle bg-primary text-white shadow-sm d-inline-flex align-items-center justify-content-center mb-3" style="width:80px; height:80px; font-size:2rem;">
+                                    {{ campaign.creator.username|make_list|first|upper }}
+                                </div>
+                            {% endif %}
+                            <h5 class="fw-bold mb-1">{{ campaign.creator.profile.full_name|default:campaign.creator.username }}</h5>
+                            <p class="text-muted text-small mb-3">Creator • Joined {{ campaign.creator.date_joined|date:"M Y" }}</p>
+                            <a href="{% url 'campaigns:creator_profile' campaign.creator.username %}" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-medium">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

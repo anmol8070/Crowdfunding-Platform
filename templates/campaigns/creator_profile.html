@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}{{ creator.profile.full_name|default:creator.username }} - Creator Profile{% endblock %}
+{% block content %}
+<div class="border-bottom border-subtle pb-5" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(102, 16, 242, 0.1) 50%, rgba(214, 51, 132, 0.1) 100%);">
+    <div class="container pt-5">
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center text-md-start mb-4 mb-md-0">
+                {% if creator.profile.profile_image %}
+                    <img src="{{ creator.profile.profile_image.url }}" class="rounded-circle shadow-lg object-fit-cover border border-4 border-white" width="160" height="160">
+                {% else %}
+                    <div class="text-white rounded-circle shadow-lg d-inline-flex align-items-center justify-content-center border border-4 border-white" style="background: linear-gradient(45deg, #0d6efd, #6f42c1); width:160px; height:160px; font-size:4rem;">
+                        {{ creator.username|make_list|first|upper }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-9 text-center text-md-start">
+                <h1 class="fw-bold mb-2 text-dark">{{ creator.profile.full_name|default:creator.username }}</h1>
+                <p class="text-secondary lead mb-3 fw-medium">
+                    <i class="bi bi-geo-alt-fill text-danger"></i> {{ creator.profile.location|default:"Location hidden" }} &nbsp; | &nbsp; 
+                    <i class="bi bi-calendar-check-fill text-primary"></i> Joined {{ creator.date_joined|date:"M Y" }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <h4 class="fw-bold mb-4">About the Creator</h4>
+            <div class="card border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(to right bottom, #ffffff, #f8f9fa);">
+                <div class="card-body p-4 p-md-5 text-dark fw-medium" style="line-height: 1.8; font-size: 1.05rem;">
+                    {{ creator.profile.bio|default:"This creator hasn't written a bio yet."|linebreaks }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mt-4 mt-md-0">
+            <h4 class="fw-bold mb-4">Creator Stats</h4>
+            <div class="card border-0 shadow-sm rounded-4 mb-3 bg-primary bg-opacity-10">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-primary text-uppercase text-small fw-bold mb-1">Active Campaigns</div>
+                        <h3 class="fw-bold mb-0 text-primary">{{ campaigns.count }}</h3>
+                    </div>
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-rocket-takeoff fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm rounded-4 mb-3 bg-success bg-opacity-10">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-success text-uppercase text-small fw-bold mb-1">Successful Projects</div>
+                        <h3 class="fw-bold mb-0 text-success">{{ completed_count }}</h3>
+                    </div>
+                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-check2-circle fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm rounded-4 bg-info bg-opacity-10">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-info-emphasis text-uppercase text-small fw-bold mb-1">Total Raised</div>
+                        <h3 class="fw-bold mb-0 text-info-emphasis">${{ total_raised }}</h3>
+                    </div>
+                    <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-cash-stack fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="fw-bold mb-4">Active Campaigns by {{ creator.profile.full_name|default:creator.username }}</h3>
+    <div class="row gy-4">
+        {% for campaign in campaigns %}
+            <div class="col-md-6 col-xl-4">
+                {% include 'components/campaign_card.html' %}
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4 text-center py-5">
+                    <div class="card-body py-5">
+                        <i class="bi bi-folder-x fs-1 text-muted mb-3 d-block"></i>
+                        <h5 class="fw-bold mb-2">No active campaigns</h5>
+                        <p class="text-muted mb-0">This creator doesn't have any active campaigns right now.</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

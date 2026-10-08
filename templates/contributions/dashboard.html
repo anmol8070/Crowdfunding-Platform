@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Contributor Dashboard - BackerWave{% endblock %}
+
+{% block content %}
+<div class="bg-surface py-4 border-bottom border-subtle">
+    <div class="container">
+        <h2 class="fw-bold mb-1">Good morning, {{ user.username }}</h2>
+        <p class="text-muted mb-0">Track the impact of your support.</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <!-- Stat Cards -->
+    <div class="row gy-4 mb-5">
+        <div class="col-sm-4">
+            <div class="card border-subtle shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="text-muted fw-bold text-uppercase mb-0">Total Contributed</h6>
+                        <i class="bi bi-wallet2 text-success fs-4"></i>
+                    </div>
+                    <h2 class="fw-bold mb-0">${{ total_amount|default:"0" }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-subtle shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="text-muted fw-bold text-uppercase mb-0">Projects Backed</h6>
+                        <i class="bi bi-box2-heart text-primary fs-4"></i>
+                    </div>
+                    <h2 class="fw-bold mb-0">{{ supported_campaigns|default:"0" }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-subtle shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="text-muted fw-bold text-uppercase mb-0">Total Contributions</h6>
+                        <i class="bi bi-list-check text-info fs-4"></i>
+                    </div>
+                    <h2 class="fw-bold mb-0">{{ total_contributions|default:"0" }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0">Your Pledge History</h4>
+        <a href="{% url 'contributions:list' %}" class="btn btn-sm btn-outline-secondary">View All</a>
+    </div>
+    
+    <div class="card border-subtle shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4 text-uppercase text-muted text-small fw-bold">Date</th>
+                        <th class="text-uppercase text-muted text-small fw-bold">Project</th>
+                        <th class="text-uppercase text-muted text-small fw-bold">Amount</th>
+                        <th class="text-uppercase text-muted text-small fw-bold">Status</th>
+                        <th class="pe-4 text-end text-uppercase text-muted text-small fw-bold">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contrib in recent_contributions %}
+                    <tr>
+                        <td class="ps-4 py-3 text-muted">{{ contrib.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'campaigns:detail' contrib.campaign.slug %}" class="text-decoration-none fw-bold text-dark">
+                                {{ contrib.campaign.title }}
+                            </a>
+                        </td>
+                        <td class="fw-bold text-success">${{ contrib.amount }}</td>
+                        <td><span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1">Success</span></td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'contributions:detail' contrib.id %}" class="btn btn-sm btn-light fw-medium">Receipt</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-clock-history fs-2 d-block mb-2"></i>
+                            You haven't made any pledges yet.
+                            <br>
+                            <a href="{% url 'campaigns:list' %}" class="btn btn-primary mt-3">Find a Project</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

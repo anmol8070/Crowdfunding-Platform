@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Explore Campaigns{% endblock %}
+
+{% block content %}
+<div class="bg-surface border-bottom border-subtle py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-muted text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active text-dark fw-medium">Explore</li>
+            </ol>
+        </nav>
+        <h1 class="fw-bold mb-3">Explore Campaigns</h1>
+        <p class="text-muted lead mb-0">Discover projects backed by people like you.</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 mb-5 mb-lg-0">
+            <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4 d-flex align-items-center gap-2"><i class="bi bi-sliders text-primary"></i> Filters</h5>
+                    
+                    <form method="get" action="{% url 'campaigns:list' %}">
+                        {% if request.GET.q %}
+                            <input type="hidden" name="q" value="{{ request.GET.q }}">
+                        {% endif %}
+                        
+                        <!-- Sort -->
+                        <div class="mb-4">
+                            <label class="form-label text-small fw-bold text-uppercase text-muted">Sort By</label>
+                            <select name="sort" class="form-select form-select-sm border-subtle shadow-none">
+                                <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest</option>
+                                <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Oldest</option>
+                                <option value="-current_amount" {% if request.GET.sort == '-current_amount' %}selected{% endif %}>Most Funded</option>
+                                <option value="end_date" {% if request.GET.sort == 'end_date' %}selected{% endif %}>Ending Soon</option>
+                                <option value="-goal_amount" {% if request.GET.sort == '-goal_amount' %}selected{% endif %}>Highest Goal</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Category -->
+                        <div class="mb-4">
+                            <label class="form-label text-small fw-bold text-uppercase text-muted">Category</label>
+                            <select name="category" class="form-select form-select-sm border-subtle shadow-none">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Goal Range -->
+                        <div class="mb-4">
+                            <label class="form-label text-small fw-bold text-uppercase text-muted">Funding Goal ($)</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="min_goal" class="form-control form-control-sm border-subtle" placeholder="Min" value="{{ request.GET.min_goal }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="max_goal" class="form-control form-control-sm border-subtle" placeholder="Max" value="{{ request.GET.max_goal }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm fw-bold">Apply Filters</button>
+                            <a href="{% url 'campaigns:list' %}" class="btn btn-light btn-sm text-muted">Clear Filters</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="text-muted fw-medium">{{ page_obj.paginator.count }} campaigns found</span>
+            </div>
+            
+            {% if page_obj %}
+                <div class="row gy-4">
+                    {% for campaign in page_obj %}
+                        <div class="col-md-6 col-xl-4">
+                            {% include 'components/campaign_card.html' %}
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                    <nav class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link shadow-sm border-subtle text-dark" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link shadow-sm border-subtle text-muted"><i class="bi bi-chevron-left"></i></span></li>
+                            {% endif %}
+                            
+                            {% for i in page_obj.paginator.page_range %}
+                                {% if page_obj.number == i %}
+                                    <li class="page-item active"><span class="page-link bg-primary border-primary shadow-sm">{{ i }}</span></li>
+                                {% else %}
+                                    <li class="page-item"><a class="page-link shadow-sm border-subtle text-dark" href="?page={{ i }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ i }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link shadow-sm border-subtle text-dark" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link shadow-sm border-subtle text-muted"><i class="bi bi-chevron-right"></i></span></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="card border-0 shadow-sm rounded-4 text-center py-5">
+                    <div class="card-body py-5">
+                        <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
+                        <h4 class="fw-bold mb-2">No campaigns found</h4>
+                        <p class="text-muted mb-4">We couldn't find any campaigns matching your current filters.</p>
+                        <a href="{% url 'campaigns:list' %}" class="btn btn-outline-primary px-4">Clear all filters</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

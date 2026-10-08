@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Review Contribution - BackerWave{% endblock %}
+
+{% block content %}
+<div class="container py-5 max-w-700" style="max-width: 600px;">
+    <div class="text-center mb-4">
+        <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+            <i class="bi bi-shield-check fs-2"></i>
+        </div>
+        <h2 class="fw-bold">Review Your Pledge</h2>
+        <p class="text-muted">You're one step away from bringing this project to life.</p>
+    </div>
+
+    <div class="card border-subtle shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="bg-light p-4 border-bottom border-subtle">
+            <div class="d-flex align-items-center gap-3">
+                {% if contribution.campaign.campaign_image %}
+                    <img src="{{ contribution.campaign.campaign_image.url }}" class="rounded-3 object-fit-cover" width="60" height="60">
+                {% else %}
+                    <div class="rounded-3 bg-secondary d-flex align-items-center justify-content-center text-white" style="width: 60px; height: 60px;">
+                        <i class="bi bi-image"></i>
+                    </div>
+                {% endif %}
+                <div>
+                    <h5 class="fw-bold mb-1 text-truncate">{{ contribution.campaign.title }}</h5>
+                    <span class="text-muted text-small">By {{ contribution.campaign.creator.username }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <h6 class="text-muted text-uppercase fw-bold text-small mb-3">Order Summary</h6>
+            <div class="d-flex justify-content-between mb-3">
+                <span class="text-secondary">Pledge Amount</span>
+                <span class="fw-medium">${{ contribution.amount }}</span>
+            </div>
+            {% if contribution.message %}
+            <div class="mb-4">
+                <span class="text-secondary d-block mb-1">Your Message</span>
+                <div class="bg-light p-3 rounded-3 text-muted text-small font-italic">"{{ contribution.message }}"</div>
+            </div>
+            {% endif %}
+            
+            <hr class="border-subtle my-4">
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fs-5 fw-bold">Total</span>
+                <span class="display-6 fw-bold text-success">${{ contribution.amount }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert alert-info rounded-4 border-info-subtle bg-info-subtle text-info-emphasis d-flex align-items-center gap-3 mb-4">
+        <i class="bi bi-info-circle fs-4"></i>
+        <div class="text-small"><strong>Note:</strong> This is a secure mock payment simulation for development. No real charges will be made.</div>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-md py-3 mb-3">Confirm Pledge</button>
+        <a href="{% url 'campaigns:detail' contribution.campaign.slug %}" class="btn btn-light w-100 fw-medium">Cancel & Return</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Support {{ campaign.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5 max-w-700" style="max-width: 600px;">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Support this project</h2>
+        <h4 class="text-primary mb-2">{{ campaign.title }}</h4>
+        <p class="text-muted">By {{ campaign.creator.username }}</p>
+    </div>
+    
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-body p-4 p-md-5">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Pledge Amount ($)</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-light border-end-0 text-muted">$</span>
+                        {{ form.amount }}
+                    </div>
+                    {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors }}</div>{% endif %}
+                    <div class="form-text mt-2">Enter the amount you wish to contribute to this campaign.</div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Leave a Message (Optional)</label>
+                    {{ form.message }}
+                    <div class="form-text mt-2">Share some words of encouragement with the creator!</div>
+                </div>
+                
+                <hr class="border-subtle my-4">
+                
+                <button type="submit" class="btn btn-success btn-lg w-100 fw-bold shadow-md py-3">Continue to Review <i class="bi bi-arrow-right ms-2"></i></button>
+            </form>
+        </div>
+    </div>
+    
+    <p class="text-center text-muted small"><i class="bi bi-shield-lock me-1"></i> Payments are processed securely via mock transaction.</p>
+</div>
+
+<script>
+    document.querySelector('input[name="amount"]').classList.add('form-control', 'bg-light', 'border-start-0', 'fw-bold', 'fs-4');
+    document.querySelector('textarea[name="message"]').classList.add('form-control', 'bg-light');
+</script>
+{% endblock %}

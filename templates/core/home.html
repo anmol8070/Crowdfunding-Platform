@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}BackerWave - Fund ideas that matter{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-surface border-bottom border-subtle">
+    <div class="container py-5 py-lg-6">
+        <div class="row align-items-center gy-5">
+            <div class="col-lg-6 pe-lg-5 text-center text-lg-start">
+                <span class="text-primary fw-bold text-small text-uppercase tracking-wider mb-3 d-block">Fund ideas that matter</span>
+                <h1 class="display text-primary mb-4 fw-bold">Great ideas deserve a chance to become real.</h1>
+                <p class="lead text-secondary mb-5">BackerWave connects passionate creators with backers who believe in the future. Discover, support, and bring visionary projects to life.</p>
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                    <a href="{% url 'campaigns:list' %}" class="btn btn-primary btn-lg px-5 shadow-md">Explore Campaigns</a>
+                    {% if user.profile.user_type == 'CREATOR' %}
+                        <a href="{% url 'campaigns:create' %}" class="btn btn-outline-primary btn-lg px-5">Start a Campaign</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                {% if featured_campaigns %}
+                    {% with campaign=featured_campaigns.first %}
+                        <div class="position-relative">
+                            <div class="position-absolute top-0 start-0 w-100 h-100 bg-primary rounded-4 opacity-10 ms-4 mt-4 d-none d-lg-block"></div>
+                            <div class="card border-0 shadow-lg rounded-4 overflow-hidden position-relative bg-white">
+                                {% if campaign.campaign_image %}
+                                    <img src="{{ campaign.campaign_image.url }}" class="w-100 object-fit-cover" style="height: 350px;">
+                                {% else %}
+                                    <div class="w-100 bg-light d-flex align-items-center justify-content-center text-muted" style="height: 350px;">
+                                        <i class="bi bi-image fs-1"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="card-body p-4 p-lg-5">
+                                    <span class="badge bg-primary-subtle text-primary mb-3 px-3 py-2 rounded-pill fw-medium border border-primary-subtle">{{ campaign.category.name }}</span>
+                                    <h3 class="fw-bold mb-2">{{ campaign.title }}</h3>
+                                    <p class="text-muted mb-4">{{ campaign.short_description|truncatechars:100 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="text-success fw-bold fs-5">${{ campaign.current_amount }}</div>
+                                            <div class="text-caption text-muted">funded of ${{ campaign.goal_amount }}</div>
+                                        </div>
+                                        <a href="{% url 'campaigns:detail' campaign.slug %}" class="btn btn-outline-primary px-4 rounded-pill">View Project</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endwith %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-white border-bottom border-subtle">
+    <div class="container">
+        <div class="row text-center gy-4">
+            <div class="col-6 col-md-3">
+                <h2 class="fw-bold text-primary mb-1">{{ stats.total_campaigns }}</h2>
+                <div class="text-muted text-small fw-medium text-uppercase">Total Projects</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <h2 class="fw-bold text-success mb-1">${{ stats.total_raised }}</h2>
+                <div class="text-muted text-small fw-medium text-uppercase">Funds Raised</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <h2 class="fw-bold text-info mb-1">{{ stats.total_contributors }}</h2>
+                <div class="text-muted text-small fw-medium text-uppercase">Backers</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <h2 class="fw-bold text-warning mb-1">{{ stats.completed_campaigns }}</h2>
+                <div class="text-muted text-small fw-medium text-uppercase">Successfully Funded</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trending Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <h2 class="fw-bold mb-2">Projects worth backing</h2>
+                <p class="text-muted mb-0">Discover campaigns making an impact right now.</p>
+            </div>
+            <a href="{% url 'campaigns:list' %}" class="btn btn-outline-primary d-none d-md-inline-block">View All</a>
+        </div>
+        
+        <div class="row gy-4">
+            {% for campaign in trending_campaigns %}
+                <div class="col-md-6 col-lg-4">
+                    {% include 'components/campaign_card.html' %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- How it Works -->
+<section class="section-padding bg-white border-top border-subtle">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-5">How BackerWave Works</h2>
+        <div class="row gy-5">
+            <div class="col-md-4">
+                <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                    <i class="bi bi-search fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-3">01. Discover</h4>
+                <p class="text-muted px-lg-4">Find innovative projects across tech, art, and community causes that inspire you.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                    <i class="bi bi-credit-card fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-3">02. Support</h4>
+                <p class="text-muted px-lg-4">Securely pledge funds to help creators reach their goals and bring ideas to life.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-info-subtle text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                    <i class="bi bi-rocket-takeoff fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-3">03. Impact</h4>
+                <p class="text-muted px-lg-4">Watch projects grow, receive exclusive updates, and be part of the journey.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white text-center">
+    <div class="container py-4">
+        <h2 class="fw-bold mb-3">Have an idea worth backing?</h2>
+        <p class="lead mb-4 text-white-50">Join thousands of creators who funded their dreams on BackerWave.</p>
+        <a href="{% url 'campaigns:create' %}" class="btn btn-light btn-lg px-5 text-primary fw-bold shadow-md">Start a Campaign</a>
+    </div>
+</section>
+{% endblock %}

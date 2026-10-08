@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Analytics for {{ campaign.title }} - BackerWave{% endblock %}
+
+{% block content %}
+<div class="bg-surface border-bottom border-subtle pt-4 pb-5 min-vh-100">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <a href="{% url 'campaigns:my_campaigns' %}" class="text-decoration-none text-muted mb-2 d-inline-block"><i class="bi bi-arrow-left me-2"></i>Back to Dashboard</a>
+                <h2 class="fw-bold mb-0">Campaign Analytics</h2>
+                <p class="text-muted lead">{{ campaign.title }}</p>
+            </div>
+            <a href="{% url 'campaigns:detail' campaign.slug %}" class="btn btn-outline-primary rounded-pill px-4 fw-medium">View Campaign</a>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-subtle shadow-sm rounded-4 h-100">
+                    <div class="card-body p-4 text-center">
+                        <div class="text-primary mb-2"><i class="bi bi-eye fs-2"></i></div>
+                        <h3 class="fw-bold mb-0">{{ total_views }}</h3>
+                        <span class="text-muted">Total Views</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-subtle shadow-sm rounded-4 h-100">
+                    <div class="card-body p-4 text-center">
+                        <div class="text-info mb-2"><i class="bi bi-person-check fs-2"></i></div>
+                        <h3 class="fw-bold mb-0">{{ unique_visitors }}</h3>
+                        <span class="text-muted">Unique Visitors</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-subtle shadow-sm rounded-4 h-100">
+                    <div class="card-body p-4 text-center">
+                        <div class="text-success mb-2"><i class="bi bi-people fs-2"></i></div>
+                        <h3 class="fw-bold mb-0">{{ contributors_count }}</h3>
+                        <span class="text-muted">Total Contributors</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-subtle shadow-sm rounded-4 h-100">
+                    <div class="card-body p-4 text-center">
+                        <div class="text-success mb-2"><i class="bi bi-currency-dollar fs-2"></i></div>
+                        <h3 class="fw-bold mb-0">${{ total_raised|floatformat:2 }}</h3>
+                        <span class="text-muted">Total Raised</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-subtle shadow-sm rounded-4 h-100">
+                    <div class="card-body p-4 text-center">
+                        <div class="text-warning mb-2"><i class="bi bi-wallet2 fs-2"></i></div>
+                        <h3 class="fw-bold mb-0">${{ avg_contribution|floatformat:2 }}</h3>
+                        <span class="text-muted">Average Contribution</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-subtle shadow-sm rounded-4 h-100">
+                    <div class="card-body p-4 text-center">
+                        <div class="text-danger mb-2"><i class="bi bi-graph-up-arrow fs-2"></i></div>
+                        <h3 class="fw-bold mb-0">{{ conversion_rate|floatformat:1 }}%</h3>
+                        <span class="text-muted">Conversion Rate</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card border-subtle shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4">Amount Raised Over Time</h5>
+                        <canvas id="raisedChart" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-subtle shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4">Contributions Over Time</h5>
+                        <canvas id="contribsChart" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const datesRaised = JSON.parse('{{ chart_dates_raised|escapejs }}');
+    const amountsRaised = JSON.parse('{{ chart_amounts_raised|escapejs }}');
+    const datesContribs = JSON.parse('{{ chart_dates_contribs|escapejs }}');
+    const countsContribs = JSON.parse('{{ chart_counts_contribs|escapejs }}');
+
+    const ctxRaised = document.getElementById('raisedChart').getContext('2d');
+    new Chart(ctxRaised, {
+        type: 'line',
+        data: {
+            labels: datesRaised,
+            datasets: [{
+                label: 'Amount Raised ($)',
+                data: amountsRaised,
+                borderColor: 'rgba(25, 135, 84, 1)',
+                backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    const ctxContribs = document.getElementById('contribsChart').getContext('2d');
+    new Chart(ctxContribs, {
+        type: 'bar',
+        data: {
+            labels: datesContribs,
+            datasets: [{
+                label: 'Number of Contributions',
+                data: countsContribs,
+                backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+</script>
+{% endblock %}
